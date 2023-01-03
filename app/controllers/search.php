@@ -8,6 +8,7 @@ class Search extends Controller {
     public function getResults() {
         include_once '../app/core/DB.php';
         include_once '../app/models/Image.php';
+        session_start();
 
         $db = GetDatabase::get_db();
         $images = $db->images->find();

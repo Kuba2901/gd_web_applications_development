@@ -78,11 +78,23 @@ class Gallery extends Controller {
                     ["visibility" => [
                         '$ne' => "private"
                     ]],
-                ]
+                ],
+                
+
             ];
         }
     
-        $images = $db->images->find($query);
+        
+
+        // Pagination
+        $page  = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        $limit = 5;
+        $skip  = ($page - 1) * $limit;  
+        $next  = ($page + 1);
+        $prev  = ($page - 1);
+        $total = count($db->images->find($query));
+
+        $images = $db->images->find($query, ['limit' => $limit, 'skip' => $skip]);
     
         echo '<form action="gallery/saveChecked" method="get">';
     
@@ -97,13 +109,12 @@ class Gallery extends Controller {
                 </tr>';
     
     
-        foreach ($images as $image) {
-
-            // Delete all images
+        foreach ($images as $image) {            
+             // Delete all images
             // $db->images->deleteOne(
             //     ['_id' => $image["_id"]]
             // );
-            
+
             $checkboxChecked = "false";
             if (isset($_SESSION['checked'])) {
                 if (in_array($image["_id"] ,$_SESSION['checked'])) {
@@ -141,10 +152,41 @@ class Gallery extends Controller {
             }
                     
         }
+
+        if($page > 1){
+            echo '
+                <tr>
+                    <td colspan=5>
+                        <a href="?page=' . $prev . '">Previous</a>                        
+                    </td>
+                </tr>
+            ';
+            if($page * $limit < $total) {
+                echo '
+                    <tr>
+                        <td colspan=5>
+                        <a href="?page=' . $next . '">Next</a>                     
+                        </td>
+                    </tr>
+                ';
+            }
+        } else {
+                echo '
+                    <tr>
+                        <td colspan=5>
+                        <a href="?page=' . $next . '">Next</a>                       
+                        </td>
+                    </tr>
+                ';
+        }
+
+        
     
         echo '</table>';
     
         echo '</form>';
+
+        
     }
 
     public function uploadImage() {
@@ -152,15 +194,12 @@ class Gallery extends Controller {
 
         session_start();
 
-        /* Get the name of the file uploaded to Apache */
         $filename = $_FILES['file']['name'];
         $watermarkValue = $_POST['watermark'];
         $titleValue = $_POST['title'];
         $authorValue = $_POST['author'] ?? $_SESSION['userLogin'];
         $visibility = $_POST['visibility'];
 
-
-        /* Prepare to save the file upload to the upload folder */
         $location = "images/".$filename;
 
         // Write text to image

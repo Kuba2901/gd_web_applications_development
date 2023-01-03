@@ -74,7 +74,7 @@ class Login extends Controller {
                         required
                         class="formbold-form-input"
                         />
-                        <label for="login" class="formbold-form-label"> Zaloguj </label>
+                        <label for="login" class="formbold-form-label"> Login </label>
                     </div>
                   </div>
     
